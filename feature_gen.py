@@ -1,11 +1,15 @@
+# -*- coding: utf-8 -*-
 import sys
 import os
+import csv
 import operator
 import matplotlib.pylab as plt
 from pathlib import Path
 import numpy as np
 import pandas as pd
 import math
+import _pickle as pickle
+import json
 from collections import Counter
 import codecs
 
@@ -21,14 +25,8 @@ class FeatureVector(object):
 
 #making feature vectors
     def analyse_training_data(self, train_inputs, train_outputs):
-        curpath = os.getcwd()
-        print(curpath)
-        par = Path(str(curpath)).parent
-        print(par)
-        new_path = os.path.join(par,'Data')
-
-        train_input_data = pd.read_csv('Data/train_set_x.csv', sep=',', header= 1 , dtype = {'id':int ,'Text':str})
-        train_output_data = pd.read_csv('Data/train_set_y.csv', sep=',', header=None)
+        train_input_data = pd.read_csv('../../Data/train_set_x.csv', sep=',', header= 1 , dtype = {'id':int ,'Text':str})
+        train_output_data = pd.read_csv('../../Data/train_set_y.csv', sep=',', header=None)
         alphabets_freq_0 = {}
         sl_count = 0
         fr_count = 0
@@ -115,7 +113,7 @@ class FeatureVector(object):
         plt.show()
         plt.legend()
         ############### PRINTING OTHER INFORMATION ###############################################
-        f = open('out.txt','w')
+        f = open('out.csv','w')
         sys.stdout = f
         print("Stats - 0: Slovak, 1: French, 2: Spanish, 3: German, 4: Polish ")
         print("\n\n\n")
@@ -126,11 +124,14 @@ class FeatureVector(object):
         total_chars = sum(alphabets_freq_0.values())
         print(total_chars)
         sorted_dict = sorted(alphabets_freq_0.items(), key=operator.itemgetter(1) , reverse = True)
+        print("Charecter occourances :: ")
+        f.write(json.dumps(sorted_dict))
         print("Total chars : ",total_chars)
         for k in alphabets_freq_0.keys():
             alphabets_freq_0[k] = alphabets_freq_0[k]/total_chars
         print("Fraction of presence of alphabets ::")
-        print(sorted(alphabets_freq_0.items(), key=operator.itemgetter(1), reverse = True ))
+        v = sorted(alphabets_freq_0.items(), key=operator.itemgetter(1), reverse = True )
+        f.write(json.dumps(v))
         print("\n\n\n")
 
 
@@ -141,11 +142,13 @@ class FeatureVector(object):
         total_chars = sum(alphabets_freq_1.values())
         print("Total chars : ",total_chars)
         sorted_dict = sorted(alphabets_freq_1.items(), key=operator.itemgetter(1) , reverse = True)
-        print(sorted_dict)
+        print("Charecter occurrences :: ")
+        f.write(json.dumps(sorted_dict))
         for k in alphabets_freq_1.keys():
             alphabets_freq_1[k] = alphabets_freq_1[k]/total_chars
         print("Fraction of presence of alphabets ::")
-        print(sorted(alphabets_freq_1.items(), key=operator.itemgetter(1), reverse = True ))
+        v = sorted(alphabets_freq_1.items(), key=operator.itemgetter(1), reverse = True )
+        f.write(json.dumps(v))
         print("\n\n\n")
 
 
@@ -157,11 +160,13 @@ class FeatureVector(object):
         total_chars = sum(alphabets_freq_2.values())
         print("Total chars : ",total_chars)
         sorted_dict = sorted(alphabets_freq_2.items(), key=operator.itemgetter(1) , reverse = True)
-        print(sorted_dict)
+        print("Charecter occurrences :: ")
+        f.write(json.dumps(sorted_dict))
         for k in alphabets_freq_2.keys():
             alphabets_freq_2[k] = alphabets_freq_2[k]/total_chars
         print("Fraction of presence of alphabets ::")
-        print(sorted(alphabets_freq_2.items(), key=operator.itemgetter(1), reverse = True ))
+        v = sorted(alphabets_freq_2.items(), key=operator.itemgetter(1), reverse = True )
+        f.write(json.dumps(v))
         print("\n\n\n")
 
 
@@ -173,11 +178,13 @@ class FeatureVector(object):
         total_chars = sum(alphabets_freq_3.values())
         print("Total chars : ",total_chars)
         sorted_dict = sorted(alphabets_freq_3.items(), key=operator.itemgetter(1) , reverse = True)
-        print(sorted_dict)
+        print("Charecter occurrences :: ")
+        f.write(json.dumps(sorted_dict))
         for k in alphabets_freq_3.keys():
             alphabets_freq_3[k] = alphabets_freq_3[k]/total_chars
         print("Fraction of presence of alphabets ::")
-        print(sorted(alphabets_freq_3.items(), key=operator.itemgetter(1), reverse = True ))
+        v = sorted(alphabets_freq_3.items(), key=operator.itemgetter(1), reverse = True )
+        f.write(json.dumps(v))
         print("\n\n\n")
 
 
@@ -189,17 +196,55 @@ class FeatureVector(object):
         total_chars = sum(alphabets_freq_4.values())
         print("Total chars : ",total_chars)
         sorted_dict = sorted(alphabets_freq_4.items(), key=operator.itemgetter(1) , reverse = True)
-        print(sorted_dict)
+        print("Charecter occurrences :: ")
+        f.write(json.dumps(sorted_dict))
         for k in alphabets_freq_4.keys():
             alphabets_freq_4[k] = alphabets_freq_4[k]/total_chars
         print("Fraction of presence of alphabets ::")
-        print(sorted(alphabets_freq_4.items(), key=operator.itemgetter(1), reverse = True ))
+        v = sorted(alphabets_freq_4.items(), key=operator.itemgetter(1), reverse = True )
+        f.write(json.dumps(v))
         print("GARBAGE : ", garbage)
-
+        f.close()
         #print(type(train_input_data[1:10]))
 
 
     def create_feature_vectors(self, train_inputs):
+        train_input_data = pd.read_csv('../../Data/train_set_x.csv', sep=',', header= 1 , dtype = {'id':int ,'Text':str})
+        #train_output_data = pd.read_csv('../../Data/train_set_y.csv', sep=',', header=None)
+
+        unique_alphabets = {}
+        feat_dict_list = []
+        for index in train_input_data.itertuples():
+            text = str(index.__getitem__(2))
+            id  = int(index.__getitem__(1))
+            word_list = text.split(' ')
+            for word in word_list:
+                for char in word:
+                    if char not in unique_alphabets:
+                        unique_alphabets[char] = 0
+        #print(unique_alphabets.keys())
+        header = [ key.encode('utf8').strip() for key in unique_alphabets.keys()]
+        feat_dict_list.append(header)
+        i = 0
+        with open( 'features.csv', "w") as csv_file:
+            writer = csv.writer(csv_file, delimiter=',')
+            for index in train_input_data.itertuples():
+                i = i+1
+                feat_dict = unique_alphabets
+                text = str(index.__getitem__(2))
+                id = int(index.__getitem__(1))
+                word_list = text.split(' ')
+                for word in word_list:
+                  for char in word:
+                     feat_dict[char] = feat_dict[char]+1
+                row_list = [ val for val in feat_dict.values()]
+                feat_dict_list.append(row_list)
+            for l in feat_dict_list:
+                writer.writerow(l)
+        
+        print(feat_dict_list[0:10])
+
+
 
 
 
@@ -208,7 +253,7 @@ test = FeatureVector()
 
 tr = 'train_set_x.csv'
 tes = 'test_set_x.csv'
-test.analyse_training_data(tr,tes)
+test.create_feature_vectors(tr)
 
 
 
