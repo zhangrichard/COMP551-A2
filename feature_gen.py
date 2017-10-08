@@ -12,6 +12,8 @@ import _pickle as pickle
 import json
 from collections import Counter
 import codecs
+import copy
+
 
 
 class FeatureVector(object):
@@ -25,7 +27,7 @@ class FeatureVector(object):
 
 #making feature vectors
     def analyse_training_data(self, train_inputs, train_outputs):
-        train_input_data = pd.read_csv('../../Data/train_set_x.csv', sep=',', header= 1 , dtype = {'id':int ,'Text':str})
+        train_input_data = pd.read_csv('../../Data/train_set_x.csv', sep=',', header= 0 , dtype = {'id':int ,'Text':str})
         train_output_data = pd.read_csv('../../Data/train_set_y.csv', sep=',', header=None)
         alphabets_freq_0 = {}
         sl_count = 0
@@ -209,11 +211,12 @@ class FeatureVector(object):
 
 
     def create_feature_vectors(self, train_inputs):
-        train_input_data = pd.read_csv('../../Data/train_set_x.csv', sep=',', header= 1 , dtype = {'id':int ,'Text':str})
+        train_input_data = pd.read_csv('../../Data/train_set_x.csv', sep=',', header= 0 , dtype = {'id':int ,'Text':str})
         #train_output_data = pd.read_csv('../../Data/train_set_y.csv', sep=',', header=None)
 
         unique_alphabets = {}
         feat_dict_list = []
+        i = 0
         for index in train_input_data.itertuples():
             text = str(index.__getitem__(2))
             id  = int(index.__getitem__(1))
@@ -229,20 +232,25 @@ class FeatureVector(object):
         with open( 'features.csv', "w") as csv_file:
             writer = csv.writer(csv_file, delimiter=',')
             for index in train_input_data.itertuples():
-                i = i+1
-                feat_dict = unique_alphabets
+                #i = i+1
+                feat_dict = copy.deepcopy(unique_alphabets)
                 text = str(index.__getitem__(2))
                 id = int(index.__getitem__(1))
+                #print(text)
                 word_list = text.split(' ')
                 for word in word_list:
                   for char in word:
                      feat_dict[char] = feat_dict[char]+1
-                row_list = [ val for val in feat_dict.values()]
+                ttl_char_inrow = sum(feat_dict.values())
+                row_list = []
+                row_list = [ val/ttl_char_inrow for val in feat_dict.values()]
+                #print(i)
+                #print(row_list)
                 feat_dict_list.append(row_list)
             for l in feat_dict_list:
                 writer.writerow(l)
         
-        print(feat_dict_list[0:10])
+        ##print(feat_dict_list[6:8])
 
 
 
