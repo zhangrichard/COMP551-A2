@@ -291,10 +291,6 @@ class FeatureVector(object):
                     # print(row_list)
                 except Exception as ee:
                     print(str(ee))
-                if i < 1000 :
-                    j = 2
-                else:
-                    break
                 feat_dict_list.append(row_list)
             for l in feat_dict_list:
                 writer.writerow(l)
