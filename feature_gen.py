@@ -255,7 +255,7 @@ class FeatureVector(object):
 
     def test_feature_vectors(self):
         train_input_data = pd.read_csv('../../Data/train_set_x.csv', sep=',', header=0, dtype={'id': int, 'Text': str})
-        test_input_data = pd.read_csv('../../Data/test_set_x.csv', sep=',', header=None)
+        test_input_data = pd.read_csv('../../Data/test_set_x.csv', sep=',', header=0)
         unique_alphabets = {}
         feat_dict_list = []
         i = 0
