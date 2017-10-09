@@ -23,6 +23,7 @@ class FeatureVector(object):
         # #self.bow = {}
         self.y_index = 0
         self.t = 0
+        self.alphabet_reference = {}
 
 
 #making feature vectors
@@ -232,7 +233,7 @@ class FeatureVector(object):
         with open( 'features.csv', "w") as csv_file:
             writer = csv.writer(csv_file, delimiter=',')
             for index in train_input_data.itertuples():
-                #i = i+1
+                i = i+1
                 feat_dict = copy.deepcopy(unique_alphabets)
                 text = str(index.__getitem__(2))
                 id = int(index.__getitem__(1))
@@ -252,7 +253,47 @@ class FeatureVector(object):
         
         ##print(feat_dict_list[6:8])
 
-
+    def test_feature_vectors(self):
+        train_input_data = pd.read_csv('../../Data/train_set_x.csv', sep=',', header=0, dtype={'id': int, 'Text': str})
+        test_input_data = pd.read_csv('../../Data/test_set_x.csv', sep=',', header=None)
+        unique_alphabets = {}
+        feat_dict_list = []
+        i = 0
+        for index in train_input_data.itertuples():
+            text = str(index.__getitem__(2))
+            id = int(index.__getitem__(1))
+            word_list = text.split(' ')
+            for word in word_list:
+                for char in word:
+                    if char not in unique_alphabets:
+                        unique_alphabets[char] = 0
+        # print(unique_alphabets.keys())
+        header = [key.encode('utf8').strip() for key in unique_alphabets.keys()]
+        feat_dict_list.append(header)
+        i = 0
+        with open('test_features.csv', "w") as csv_file:
+            writer = csv.writer(csv_file, delimiter=',')
+            for index in test_input_data.itertuples():
+                i = i + 1
+                feat_dict = copy.deepcopy(unique_alphabets)
+                text = str(index.__getitem__(2))
+                #id = int(index.__getitem__(1))
+                # print(text)
+                word_list = text.split(' ')
+                try:
+                    for word in word_list:
+                        for char in word:
+                            feat_dict[char] = feat_dict[char] + 1
+                    ttl_char_inrow = sum(feat_dict.values())
+                    row_list = []
+                    row_list = [val / ttl_char_inrow for val in feat_dict.values()]
+                    # print(i)
+                    # print(row_list)
+                except Exception as ee:
+                    print(str(ee))
+                feat_dict_list.append(row_list)
+            for l in feat_dict_list:
+                writer.writerow(l)
 
 
 
@@ -261,7 +302,7 @@ test = FeatureVector()
 
 tr = 'train_set_x.csv'
 tes = 'test_set_x.csv'
-test.create_feature_vectors(tr)
+test.test_feature_vectors()
 
 
 
