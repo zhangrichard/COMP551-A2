@@ -255,7 +255,7 @@ class FeatureVector(object):
 
     def test_feature_vectors(self):
         train_input_data = pd.read_csv('../../Data/train_set_x.csv', sep=',', header=0, dtype={'id': int, 'Text': str})
-        test_input_data = pd.read_csv('../../Data/test_set_x.csv', sep=',', header=None)
+        test_input_data = pd.read_csv('../../Data/test_set_x.csv', sep=',', header=0)
         unique_alphabets = {}
         feat_dict_list = []
         i = 0
@@ -291,6 +291,10 @@ class FeatureVector(object):
                     # print(row_list)
                 except Exception as ee:
                     print(str(ee))
+                if i < 1000 :
+                    j = 2
+                else:
+                    break
                 feat_dict_list.append(row_list)
             for l in feat_dict_list:
                 writer.writerow(l)
