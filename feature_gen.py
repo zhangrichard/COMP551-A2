@@ -2,6 +2,8 @@
 import sys
 import os
 import csv
+import re
+import string
 import operator
 import matplotlib.pylab as plt
 from pathlib import Path
@@ -13,7 +15,7 @@ import json
 from collections import Counter
 import codecs
 import copy
-
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 
 class FeatureVector(object):
@@ -211,6 +213,68 @@ class FeatureVector(object):
         #print(type(train_input_data[1:10]))
 
 
+    def preprocess_data_create_feature_train(self):
+        df = pd.read_csv('../../Data/train_set_x.csv', sep=',', header= 0 , dtype = {'id':int ,'Text':str})
+        df['Text'] = df['Text'].str.replace(u'![\u4e00-\u9fff，。／【】、v；‘:\"\",./[]-={}]+' , '')
+        #df['Text'] = df['Text'].str.replace(r'r')
+        RE_PUNCTUATION = '|'.join([re.escape(x) for x in string.punctuation])
+        df['Text']= df['Text'].str.replace(RE_PUNCTUATION, "")
+        #df['Text']= df['Text'].str.replace('[+string.punctuation+]','')
+        df['Text'] = df['Text'].str.replace('http(.*) ','')
+        df['Text'] = df['Text'].str.replace('URL(.*) ', '')
+        df['Text'] = df['Text'].str.replace('[0-9]', '')
+        df['Text'] = df['Text'].str.replace('[0-9]', '')
+        df['Text'] = df['Text'].str.replace(r'(.)\1+', r'\1\1')
+            #df['Text'] = df['Text'].str.encode("latin-1","ignore")
+
+        #print(df['Text'])
+        vectorizer = TfidfVectorizer(analyzer='char')
+        x = vectorizer.fit_transform(df['Text'].values.astype('U')).toarray()
+        for i,col in enumerate(vectorizer.get_feature_names()):
+            if (ord(col)>=97 and ord(col)<=122) or (ord(col)>=192 and ord(col)<=286) or (ord(col)>=65 and ord(col)<=90):
+                #print(col)
+                df[col] = x[:, i]
+                self.alphabet_reference[col] = 0
+        features = df.drop('Id',axis=1)
+        features = features.drop('Text',axis = 1)
+        #print(self.alphabet_reference)
+        #print(features)
+        features.to_csv('train_featuresV2.csv', sep=',', encoding='utf-8')
+
+    def test_feature_vectorsV2(self):
+        df = pd.read_csv('../../Data/test_set_x.csv', sep=',', header=0)
+        df['Text'] = df['Text'].str.replace(u'![\u4e00-\u9fff，。／【】、v；‘:\"\",./[]-={}]+', '')
+        # df['Text'] = df['Text'].str.replace(r'r')
+        RE_PUNCTUATION = '|'.join([re.escape(x) for x in string.punctuation])
+        df['Text'] = df['Text'].str.replace(RE_PUNCTUATION, "")
+        # df['Text']= df['Text'].str.replace('[+string.punctuation+]','')
+        df['Text'] = df['Text'].str.replace('http(.*) ', '')
+        df['Text'] = df['Text'].str.replace('URL(.*) ', '')
+        df['Text'] = df['Text'].str.replace('[0-9]', '')
+        df['Text'] = df['Text'].str.replace('[0-9]', '')
+        df['Text'] = df['Text'].str.replace(r'(.)\1+', r'\1\1')
+        vectorizer = TfidfVectorizer(analyzer='char')
+        x = vectorizer.fit_transform(df['Text'].values.astype('U')).toarray()
+        test_feat_dict = copy.deepcopy(self.alphabet_reference)
+
+        #header = [key.encode('utf8').strip() for key in self.alphabet_reference.keys()]
+        #test_feat_list.append(header)
+        for i, col in enumerate(vectorizer.get_feature_names()):
+            if col in self.alphabet_reference:
+                test_feat_dict[col] = x[:,i]
+                #print(x.shape[0])
+            else:
+                v = np.asarray([0]* x.shape[0])
+                test_feat_dict[col] = v
+                #print(v)
+        testdf = pd.DataFrame(test_feat_dict)
+        testdf = testdf.drop(testdf.columns[0],axis = 1)
+        testdf.to_csv('test_featuresV2.csv', sep=',', encoding='utf-8')
+
+
+
+
+
     def create_feature_vectors(self, train_inputs):
         train_input_data = pd.read_csv('../../Data/train_set_x.csv', sep=',', header= 0 , dtype = {'id':int ,'Text':str})
         #train_output_data = pd.read_csv('../../Data/train_set_y.csv', sep=',', header=None)
@@ -250,7 +314,7 @@ class FeatureVector(object):
                 feat_dict_list.append(row_list)
             for l in feat_dict_list:
                 writer.writerow(l)
-        
+
         ##print(feat_dict_list[6:8])
 
     def test_feature_vectors(self):
@@ -302,7 +366,8 @@ test = FeatureVector()
 
 tr = 'train_set_x.csv'
 tes = 'test_set_x.csv'
-test.test_feature_vectors()
+test.preprocess_data_create_feature_train()
+test.test_feature_vectorsV2()
 
 
 
