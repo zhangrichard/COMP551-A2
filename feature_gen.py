@@ -29,9 +29,22 @@ class FeatureVector(object):
 
 
 #making feature vectors
-    def analyse_training_data(self, train_inputs, train_outputs):
-        train_input_data = pd.read_csv('../../Data/train_set_x.csv', sep=',', header= 0 , dtype = {'id':int ,'Text':str})
-        train_output_data = pd.read_csv('../../Data/train_set_y.csv', sep=',', header=None)
+    def analyse_training_data(self):
+        df = pd.read_csv('../../Data/train_set_x.csv',sep=',', header= 0 , dtype = {'id':int ,'Text':str} )
+        train_output_data = pd.read_csv('../../Data/train_set_y.csv', sep=',', header=0)
+        #df['Text'] = df['Text'].str.replace(u'![\u4e00-\u9fff，。／【】、v；‘:\"\",./[]-={}]+' , '')
+        #df['Text'] = df['Text'].str.replace(r'r')
+        #RE_PUNCTUATION = '|'.join([re.escape(x) for x in string.punctuation])
+        #df['Text']= df['Text'].str.replace(RE_PUNCTUATION, "")
+        #df['Text']= df['Text'].str.replace('[+string.punctuation+]','')
+        pattern = re.compile('http[s]?(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
+        #df['Text'] = df['Text'].str.replace(pattern, '')
+        patternURL = re.compile('url[s]?(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
+        #patternJPG = re.compile('(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))?jpg')
+        #df['Text'] = df['Text'].str.replace(patternJPG ,'')
+        #df['Text'] = df['Text'].str.replace('[0-9]', '')
+        #df['Text'] = df['Text'].str.replace('[0-9]', '')
+        #df['Text'] = df['Text'].str.replace(r'(.)\1+', r'\1\1')
         alphabets_freq_0 = {}
         sl_count = 0
         fr_count = 0
@@ -43,78 +56,96 @@ class FeatureVector(object):
         alphabets_freq_2 = {}
         alphabets_freq_3 = {}
         alphabets_freq_4 = {}
-        for index in train_input_data.itertuples():
+        for index in df.itertuples():
             text = str(index.__getitem__(2))
+            print(text)
+            text_series = pd.Series(text)
+            text_series = text_series.str.replace(pattern,'')
+            text_series = text_series.str.replace(patternURL,'')
+            print('a')
+            #text_series = text_series.str.replace(patternJPG,'')
+            print('b')
+            text_series = text_series.str.replace('[0-9]', '')
+            print('c')
+            text_series = text_series.str.replace(r'(.)\1+', r'\1\1')
+            text = str(text_series.values[0])
+            print(text)
             id  = int(index.__getitem__(1))
-            lang_id = int(train_output_data.at[id,1])
+            print(id)
+            lang_id = int(train_output_data.iloc[id,1])
             word_list = text.split(' ')
             if lang_id==0:
                 sl_count = sl_count+1
                 for word in word_list:
                     for char in word:
-                        if char not in alphabets_freq_0:
-                            alphabets_freq_0[char] = 1
-                        else:
-                            alphabets_freq_0[char] = alphabets_freq_0[char]+1
+                        if (ord(char)>=97 and ord(char)<=122) or (ord(char)>=192 and ord(char)<=286) or (ord(char)>=65 and ord(char)<=90):
+                            if (char not in alphabets_freq_0):
+                                alphabets_freq_0[char] = 1
+                            else:
+                                alphabets_freq_0[char] = alphabets_freq_0[char]+1
             elif lang_id==1:
                 fr_count = fr_count+1
                 for word in word_list:
                     for char in word:
-                        if char not in alphabets_freq_1:
-                            alphabets_freq_1[char] = 1
-                        else:
-                            alphabets_freq_1[char] = alphabets_freq_1[char]+1
+                        if (ord(char) >= 97 and ord(char) <= 122) or (ord(char) >= 192 and ord(char) <= 286) or (ord(char) >= 65 and ord(char) <= 90):
+                            if char not in alphabets_freq_1:
+                                alphabets_freq_1[char] = 1
+                            else:
+                                alphabets_freq_1[char] = alphabets_freq_1[char]+1
             elif lang_id==2:
                 sp_count = sp_count + 1
                 for word in word_list:
                     for char in word:
-                        if char not in alphabets_freq_2:
-                            alphabets_freq_2[char] = 1
-                        else:
-                            alphabets_freq_2[char] = alphabets_freq_2[char]+1
+                        if (ord(char) >= 97 and ord(char) <= 122) or (ord(char) >= 192 and ord(char) <= 286) or (ord(char) >= 65 and ord(char) <= 90):
+                            if char not in alphabets_freq_2:
+                                alphabets_freq_2[char] = 1
+                            else:
+                                alphabets_freq_2[char] = alphabets_freq_2[char]+1
             elif lang_id==3:
                 gr_count = gr_count + 1
                 for word in word_list:
                     for char in word:
-                        if char not in alphabets_freq_3:
-                            alphabets_freq_3[char] = 1
-                        else:
-                            alphabets_freq_3[char] = alphabets_freq_3[char]+1
+                        if (ord(char) >= 97 and ord(char) <= 122) or (ord(char) >= 192 and ord(char) <= 286) or (ord(char) >= 65 and ord(char) <= 90):
+                            if char not in alphabets_freq_3:
+                                alphabets_freq_3[char] = 1
+                            else:
+                                alphabets_freq_3[char] = alphabets_freq_3[char]+1
             elif lang_id==4:
                 pl_count = pl_count+1
                 for word in word_list:
                     for char in word:
-                        if char not in alphabets_freq_4:
-                            alphabets_freq_4[char] = 1
-                        else:
-                            alphabets_freq_4[char] = alphabets_freq_4[char]+1
+                        if (ord(char) >= 97 and ord(char) <= 122) or (ord(char) >= 192 and ord(char) <= 286) or (ord(char) >= 65 and ord(char) <= 90):
+                            if char not in alphabets_freq_4:
+                                alphabets_freq_4[char] = 1
+                            else:
+                                alphabets_freq_4[char] = alphabets_freq_4[char]+1
             else:
                 garbage = garbage+1
 
         ########### PLOTTING THE HISTOGRAMS #####################
         ###0: Slovak, 1: French, 2: Spanish, 3: German, 4: Polish
         plt.bar(range(len(alphabets_freq_0)), alphabets_freq_0.values(), align='center' ,color = 'red' , label = 'Slovak')
-        plt.xticks(range(len(alphabets_freq_0)), alphabets_freq_0.keys())
+        plt.xticks(range(len(alphabets_freq_0)), sorted(alphabets_freq_0.keys()))
         plt.title(" for 0")
-        #plt.show()
-        #plt.title(" for 1")
+        plt.show()
+        plt.title(" for 1")
         plt.bar(range(len(alphabets_freq_1)), alphabets_freq_1.values(), align='center' , color = 'blue' , label = 'french')
-        plt.xticks(range(len(alphabets_freq_1)), alphabets_freq_1.keys())
-        #plt.show()
-        #plt.figure()
+        plt.xticks(range(len(alphabets_freq_1)), sorted(alphabets_freq_1.keys()))
+        plt.show()
+        plt.figure()
         plt.title("for 2")
         plt.bar(range(len(alphabets_freq_2)), alphabets_freq_2.values(), align='center' , color = 'black', label = 'spanish')
-        plt.xticks(range(len(alphabets_freq_2)), alphabets_freq_2.keys())
-        #plt.show()
-        #plt.figure()
+        plt.xticks(range(len(alphabets_freq_2)), sorted(alphabets_freq_2.keys()))
+        plt.show()
+        plt.figure()
         plt.title("for 3")
         plt.bar(range(len(alphabets_freq_3)), alphabets_freq_3.values(), align='center' , color = 'green' , label = 'german')
-        plt.xticks(range(len(alphabets_freq_3)), alphabets_freq_3.keys())
-        #plt.show()
-        #plt.figure()
+        plt.xticks(range(len(alphabets_freq_3)), sorted(alphabets_freq_3.keys()))
+        plt.show()
+        plt.figure()
         plt.title("for 4")
         plt.bar(range(len(alphabets_freq_4)), alphabets_freq_4.values(), align='center' ,  color = 'pink' , label = 'Polish')
-        plt.xticks(range(len(alphabets_freq_4)), alphabets_freq_4.keys())
+        plt.xticks(range(len(alphabets_freq_4)), sorted(alphabets_freq_4.keys()))
         plt.show()
         plt.legend()
         ############### PRINTING OTHER INFORMATION ###############################################
@@ -215,14 +246,18 @@ class FeatureVector(object):
 
     def preprocess_data_create_feature_train(self):
         df = pd.read_csv('../../Data/train_set_x.csv', sep=',', header= 0 , dtype = {'id':int ,'Text':str})
+
         df['Text'] = df['Text'].str.replace(u'![\u4e00-\u9fff，。／【】、v；‘:\"\",./[]-={}]+' , '')
         #df['Text'] = df['Text'].str.replace(r'r')
         RE_PUNCTUATION = '|'.join([re.escape(x) for x in string.punctuation])
         df['Text']= df['Text'].str.replace(RE_PUNCTUATION, "")
         #df['Text']= df['Text'].str.replace('[+string.punctuation+]','')
-        df['Text'] = df['Text'].str.replace('http(.*) ','')
-        df['Text'] = df['Text'].str.replace('URL(.*) ', '')
-        df['Text'] = df['Text'].str.replace('[0-9]', '')
+        pattern = re.compile('http[s]?(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
+        df['Text'] = df['Text'].str.replace(pattern, '')
+        patternURL = re.compile('url[s]?(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
+        df['Text'] = df['Text'].str.replace(patternURL, '')
+        #patternJPG = re.compile('(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+jpg')
+        #df['Text'] = df['Text'].str.replace(patternJPG ,'')
         df['Text'] = df['Text'].str.replace('[0-9]', '')
         df['Text'] = df['Text'].str.replace(r'(.)\1+', r'\1\1')
             #df['Text'] = df['Text'].str.encode("latin-1","ignore")
@@ -230,6 +265,7 @@ class FeatureVector(object):
         #print(df['Text'])
         vectorizer = TfidfVectorizer(analyzer='char')
         x = vectorizer.fit_transform(df['Text'].values.astype('U')).toarray()
+        #print(x)
         for i,col in enumerate(vectorizer.get_feature_names()):
             if (ord(col)>=97 and ord(col)<=122) or (ord(col)>=192 and ord(col)<=286) or (ord(col)>=65 and ord(col)<=90):
                 #print(col)
@@ -241,6 +277,7 @@ class FeatureVector(object):
         #print(features)
         features.to_csv('train_featuresV2.csv', sep=',', encoding='utf-8')
 
+
     def test_feature_vectorsV2(self):
         df = pd.read_csv('../../Data/test_set_x.csv', sep=',', header=0)
         df['Text'] = df['Text'].str.replace(u'![\u4e00-\u9fff，。／【】、v；‘:\"\",./[]-={}]+', '')
@@ -248,27 +285,35 @@ class FeatureVector(object):
         RE_PUNCTUATION = '|'.join([re.escape(x) for x in string.punctuation])
         df['Text'] = df['Text'].str.replace(RE_PUNCTUATION, "")
         # df['Text']= df['Text'].str.replace('[+string.punctuation+]','')
-        df['Text'] = df['Text'].str.replace('http(.*) ', '')
-        df['Text'] = df['Text'].str.replace('URL(.*) ', '')
-        df['Text'] = df['Text'].str.replace('[0-9]', '')
+        pattern = re.compile('http[s]?(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
+        df['Text'] = df['Text'].str.replace(pattern, '')
+        patternURL = re.compile('url[s]?(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+')
+        df['Text'] = df['Text'].str.replace(patternURL, '')
+        #patternJPG = re.compile('(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+jpg')
+        #df['Text'] = df['Text'].str.replace(patternJPG ,'')
         df['Text'] = df['Text'].str.replace('[0-9]', '')
         df['Text'] = df['Text'].str.replace(r'(.)\1+', r'\1\1')
+
         vectorizer = TfidfVectorizer(analyzer='char')
         x = vectorizer.fit_transform(df['Text'].values.astype('U')).toarray()
         test_feat_dict = copy.deepcopy(self.alphabet_reference)
-
+        #print(test_feat_dict)
         #header = [key.encode('utf8').strip() for key in self.alphabet_reference.keys()]
         #test_feat_list.append(header)
+        for key in test_feat_dict.keys():
+            v = np.array([0] * x.shape[0])
+            test_feat_dict[key] = v
+        #print(test_feat_dict)
         for i, col in enumerate(vectorizer.get_feature_names()):
             if col in self.alphabet_reference:
                 test_feat_dict[col] = x[:,i]
                 #print(x.shape[0])
-            else:
-                v = np.asarray([0]* x.shape[0])
-                test_feat_dict[col] = v
-                #print(v)
+            #v = np.asarray([0]* x.shape[0])
+            #test_feat_dict[col] = v
+            #print(v)
+        #print(test_feat_dict)
         testdf = pd.DataFrame(test_feat_dict)
-        testdf = testdf.drop(testdf.columns[0],axis = 1)
+        #testdf = testdf.drop(testdf.columns[0],axis = 1)
         testdf.to_csv('test_featuresV2.csv', sep=',', encoding='utf-8')
 
 
@@ -366,6 +411,7 @@ test = FeatureVector()
 
 tr = 'train_set_x.csv'
 tes = 'test_set_x.csv'
+#test.analyse_training_data()
 test.preprocess_data_create_feature_train()
 test.test_feature_vectorsV2()
 
