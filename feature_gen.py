@@ -16,7 +16,7 @@ from collections import Counter
 import codecs
 import copy
 from sklearn.feature_extraction.text import TfidfVectorizer
-
+import collections
 
 class FeatureVector(object):
     def __init__(self):
@@ -45,6 +45,7 @@ class FeatureVector(object):
         #df['Text'] = df['Text'].str.replace('[0-9]', '')
         #df['Text'] = df['Text'].str.replace('[0-9]', '')
         #df['Text'] = df['Text'].str.replace(r'(.)\1+', r'\1\1')
+        alphabets_freq_main = {}
         alphabets_freq_0 = {}
         sl_count = 0
         fr_count = 0
@@ -58,20 +59,20 @@ class FeatureVector(object):
         alphabets_freq_4 = {}
         for index in df.itertuples():
             text = str(index.__getitem__(2))
-            print(text)
+            #print(text)
             text_series = pd.Series(text)
             text_series = text_series.str.replace(pattern,'')
             text_series = text_series.str.replace(patternURL,'')
-            print('a')
+            #print('a')
             #text_series = text_series.str.replace(patternJPG,'')
-            print('b')
+            #print('b')
             text_series = text_series.str.replace('[0-9]', '')
-            print('c')
+            #print('c')
             text_series = text_series.str.replace(r'(.)\1+', r'\1\1')
             text = str(text_series.values[0])
-            print(text)
+            ##print(text)
             id  = int(index.__getitem__(1))
-            print(id)
+            #print(id)
             lang_id = int(train_output_data.iloc[id,1])
             word_list = text.split(' ')
             if lang_id==0:
@@ -83,6 +84,8 @@ class FeatureVector(object):
                                 alphabets_freq_0[char] = 1
                             else:
                                 alphabets_freq_0[char] = alphabets_freq_0[char]+1
+                            if (char not in alphabets_freq_main):
+                                alphabets_freq_main[char] = 0
             elif lang_id==1:
                 fr_count = fr_count+1
                 for word in word_list:
@@ -92,6 +95,8 @@ class FeatureVector(object):
                                 alphabets_freq_1[char] = 1
                             else:
                                 alphabets_freq_1[char] = alphabets_freq_1[char]+1
+                            if (char not in alphabets_freq_main):
+                                alphabets_freq_main[char] = 0
             elif lang_id==2:
                 sp_count = sp_count + 1
                 for word in word_list:
@@ -101,6 +106,8 @@ class FeatureVector(object):
                                 alphabets_freq_2[char] = 1
                             else:
                                 alphabets_freq_2[char] = alphabets_freq_2[char]+1
+                            if (char not in alphabets_freq_main):
+                                alphabets_freq_main[char] = 0
             elif lang_id==3:
                 gr_count = gr_count + 1
                 for word in word_list:
@@ -110,6 +117,8 @@ class FeatureVector(object):
                                 alphabets_freq_3[char] = 1
                             else:
                                 alphabets_freq_3[char] = alphabets_freq_3[char]+1
+                            if (char not in alphabets_freq_main):
+                                alphabets_freq_main[char] = 0
             elif lang_id==4:
                 pl_count = pl_count+1
                 for word in word_list:
@@ -119,33 +128,52 @@ class FeatureVector(object):
                                 alphabets_freq_4[char] = 1
                             else:
                                 alphabets_freq_4[char] = alphabets_freq_4[char]+1
+                            if (char not in alphabets_freq_main):
+                                alphabets_freq_main[char] = 0
             else:
                 garbage = garbage+1
-
-        ########### PLOTTING THE HISTOGRAMS #####################
+        for k in alphabets_freq_main.keys():
+            if k not in alphabets_freq_0.keys():
+                #print(type(k))
+                alphabets_freq_0[k] = 0
+            if k not in alphabets_freq_1.keys():
+                alphabets_freq_1[k] = 0
+            if k not in alphabets_freq_2.keys():
+                alphabets_freq_2[k] = 0
+            if k not in alphabets_freq_3.keys():
+                alphabets_freq_3[k] = 0
+            if k not in alphabets_freq_4.keys():
+                alphabets_freq_4[k] = 0
+        arranged_0 = collections.OrderedDict(sorted(alphabets_freq_0.items()))
+        arranged_1 = collections.OrderedDict(sorted(alphabets_freq_1.items()))
+        arranged_2 = collections.OrderedDict(sorted(alphabets_freq_2.items()))
+        arranged_3 = collections.OrderedDict(sorted(alphabets_freq_3.items()))
+        arranged_4 = collections.OrderedDict(sorted(alphabets_freq_4.items()))
+        print(len(arranged_0))
+                    ########### PLOTTING THE HISTOGRAMS #####################
         ###0: Slovak, 1: French, 2: Spanish, 3: German, 4: Polish
-        plt.bar(range(len(alphabets_freq_0)), alphabets_freq_0.values(), align='center' ,color = 'red' , label = 'Slovak')
-        plt.xticks(range(len(alphabets_freq_0)), sorted(alphabets_freq_0.keys()))
+        plt.bar(range(len(alphabets_freq_main)), arranged_0.values(), align='center' ,color = 'red' , label = 'Slovak')
+        plt.xticks(range(len(alphabets_freq_0)), arranged_0.keys())
         plt.title(" for 0")
         plt.show()
         plt.title(" for 1")
-        plt.bar(range(len(alphabets_freq_1)), alphabets_freq_1.values(), align='center' , color = 'blue' , label = 'french')
-        plt.xticks(range(len(alphabets_freq_1)), sorted(alphabets_freq_1.keys()))
+        plt.bar(range(len(alphabets_freq_main)), arranged_1.values(), align='center' , color = 'blue' , label = 'french')
+        plt.xticks(range(len(alphabets_freq_1)), arranged_1.keys())
         plt.show()
         plt.figure()
         plt.title("for 2")
-        plt.bar(range(len(alphabets_freq_2)), alphabets_freq_2.values(), align='center' , color = 'black', label = 'spanish')
-        plt.xticks(range(len(alphabets_freq_2)), sorted(alphabets_freq_2.keys()))
+        plt.bar(range(len(alphabets_freq_main)), arranged_2.values(), align='center' , color = 'black', label = 'spanish')
+        plt.xticks(range(len(alphabets_freq_2)), arranged_2.keys())
         plt.show()
         plt.figure()
         plt.title("for 3")
-        plt.bar(range(len(alphabets_freq_3)), alphabets_freq_3.values(), align='center' , color = 'green' , label = 'german')
-        plt.xticks(range(len(alphabets_freq_3)), sorted(alphabets_freq_3.keys()))
+        plt.bar(range(len(alphabets_freq_main)), arranged_3.values(), align='center' , color = 'green' , label = 'german')
+        plt.xticks(range(len(alphabets_freq_3)),  arranged_3.keys())
         plt.show()
         plt.figure()
         plt.title("for 4")
-        plt.bar(range(len(alphabets_freq_4)), alphabets_freq_4.values(), align='center' ,  color = 'pink' , label = 'Polish')
-        plt.xticks(range(len(alphabets_freq_4)), sorted(alphabets_freq_4.keys()))
+        plt.bar(range(len(alphabets_freq_main)), arranged_4.values(), align='center' ,  color = 'pink' , label = 'Polish')
+        plt.xticks(range(len(alphabets_freq_4)),  arranged_4.keys())
         plt.show()
         plt.legend()
         ############### PRINTING OTHER INFORMATION ###############################################
@@ -263,7 +291,7 @@ class FeatureVector(object):
             #df['Text'] = df['Text'].str.encode("latin-1","ignore")
 
         #print(df['Text'])
-        vectorizer = TfidfVectorizer(analyzer='char')
+        vectorizer = TfidfVectorizer(analyzer='char',lowercase=False)
         x = vectorizer.fit_transform(df['Text'].values.astype('U')).toarray()
         #print(x)
         for i,col in enumerate(vectorizer.get_feature_names()):
@@ -275,7 +303,7 @@ class FeatureVector(object):
         features = features.drop('Text',axis = 1)
         #print(self.alphabet_reference)
         #print(features)
-        features.to_csv('train_featuresV2.csv', sep=',', encoding='utf-8')
+        features.to_csv('train_featuresV2_mini.csv', sep=',', encoding='utf-8')
 
 
     def test_feature_vectorsV2(self):
@@ -294,7 +322,7 @@ class FeatureVector(object):
         df['Text'] = df['Text'].str.replace('[0-9]', '')
         df['Text'] = df['Text'].str.replace(r'(.)\1+', r'\1\1')
 
-        vectorizer = TfidfVectorizer(analyzer='char')
+        vectorizer = TfidfVectorizer(analyzer='char' , lowercase=False)
         x = vectorizer.fit_transform(df['Text'].values.astype('U')).toarray()
         test_feat_dict = copy.deepcopy(self.alphabet_reference)
         #print(test_feat_dict)
@@ -314,7 +342,7 @@ class FeatureVector(object):
         #print(test_feat_dict)
         testdf = pd.DataFrame(test_feat_dict)
         #testdf = testdf.drop(testdf.columns[0],axis = 1)
-        testdf.to_csv('test_featuresV2.csv', sep=',', encoding='utf-8')
+        testdf.to_csv('test_featuresV2_mini.csv', sep=',', encoding='utf-8')
 
 
 
